@@ -1,0 +1,128 @@
+/* TIDEBOUND — moonlit harbour table. Cards stay legible at thumbnail
+   size: big power number, big suit glyph, cost as filled pips. */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: "Avenir Next", "Segoe UI", Verdana, sans-serif;
+  color: #e2f3ff;
+  background:
+    radial-gradient(900px 500px at 50% -10%, rgba(56, 189, 248, 0.25), transparent 60%),
+    radial-gradient(700px 400px at 90% 110%, rgba(251, 191, 36, 0.14), transparent 60%),
+    linear-gradient(180deg, #06202e 0%, #083344 55%, #052531 100%);
+  overflow: hidden;
+  user-select: none;
+}
+#app { width: 1280px; height: 800px; margin: 0 auto; position: relative; padding: 14px 20px; }
+
+/* ---------- top bar ---------- */
+#topbar { display: flex; align-items: center; gap: 16px; height: 44px; }
+#game-title { font-size: 22px; letter-spacing: 3px; font-weight: 800; color: #7dd3fc; }
+#game-title b { color: #fbbf24; }
+#turn-label { font-size: 15px; color: #bae6fd; background: rgba(12, 74, 110, 0.6); padding: 4px 12px; border-radius: 20px; border: 1px solid #155e75; }
+#energy { font-size: 17px; letter-spacing: 2px; color: #67e8f9; }
+#energy span { color: #e2f3ff; font-weight: 700; }
+#score-line { margin-left: auto; font-size: 13px; color: #94c8de; }
+#mute-btn { background: rgba(12, 74, 110, 0.7); color: #e2f3ff; border: 1px solid #155e75; border-radius: 8px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+
+/* ---------- opponent row ---------- */
+.fighter { display: flex; align-items: center; gap: 14px; margin: 8px 0; }
+.avatar { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; border: 2px solid rgba(255, 255, 255, 0.35); background: radial-gradient(circle at 35% 30%, #155e75, #082f49); }
+.fighter.you .avatar { background: radial-gradient(circle at 35% 30%, #92400e, #451a03); }
+.who { width: 210px; }
+.who .name { font-size: 17px; font-weight: 800; letter-spacing: 1px; }
+.who .sub { font-size: 12px; color: #94c8de; }
+.hpbar { position: relative; flex: 1; height: 26px; background: rgba(2, 20, 30, 0.8); border: 1px solid #155e75; border-radius: 13px; overflow: hidden; }
+.hpfill { height: 100%; background: linear-gradient(90deg, #f87171, #fb923c); transition: width 0.5s ease; }
+.fighter.you .hpfill { background: linear-gradient(90deg, #34d399, #38bdf8); }
+.hptext { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7); }
+#intent { font-size: 14px; color: #fda4af; background: rgba(136, 19, 55, 0.35); border: 1px solid rgba(251, 113, 133, 0.5); padding: 6px 12px; border-radius: 8px; min-width: 250px; }
+.intent-eye { color: #fb7185; margin-right: 4px; }
+
+/* ---------- hands & table ---------- */
+.mini-hand { display: flex; gap: 6px; min-height: 96px; align-items: center; }
+#opp-hand { justify-content: center; }
+.table-row { display: flex; gap: 10px; min-height: 126px; align-items: center; justify-content: center; background: rgba(8, 47, 73, 0.45); border: 1px dashed rgba(125, 211, 252, 0.35); border-radius: 14px; margin: 6px 0; padding: 6px; }
+.table-label { position: absolute; left: 26px; font-size: 11px; letter-spacing: 2px; color: #67a8c4; }
+#table-opp { position: relative; }
+#table-you { position: relative; }
+#combo-meter { min-height: 30px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.combo-badge { font-size: 14px; font-weight: 800; padding: 5px 12px; border-radius: 20px; background: rgba(251, 191, 36, 0.2); border: 1px solid #fbbf24; color: #fde68a; }
+.combo-hint { font-size: 13px; color: #7fb6cf; font-style: italic; }
+#log { text-align: center; font-size: 14px; color: #c9e8f7; min-height: 22px; margin-top: 2px; }
+
+/* ---------- player hand ---------- */
+#hand-zone { display: flex; align-items: flex-end; gap: 16px; margin-top: 4px; }
+#hand { display: flex; gap: 8px; flex: 1; justify-content: center; min-height: 168px; }
+#end-turn {
+  width: 150px; height: 64px; border-radius: 12px; border: 2px solid #fbbf24;
+  background: linear-gradient(180deg, #b45309, #92400e); color: #fef3c7;
+  font-size: 17px; font-weight: 800; letter-spacing: 1px; cursor: pointer;
+  box-shadow: 0 4px 0 #451a03;
+}
+#end-turn:hover:not(:disabled) { filter: brightness(1.15); }
+#end-turn:disabled { opacity: 0.45; cursor: default; }
+
+/* ---------- cards ---------- */
+/* Screenshot stills: animations settle instantly so a captured frame shows
+   the table at rest (real play keeps the slide/flip animations). */
+.shot *, .shot *::before, .shot *::after { animation: none !important; transition: none !important; }
+.card {
+  width: 104px; height: 148px; border-radius: 12px; position: relative;
+  background: linear-gradient(165deg, #f8fafc 0%, #e2e8f0 55%, #cbd5e1 100%);
+  color: #0f172a; border: 3px solid var(--suit, #38bdf8);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45), inset 0 0 0 2px rgba(255, 255, 255, 0.6);
+  cursor: pointer; flex: none;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  animation: dealIn 0.35s ease backwards;
+}
+#hand .card { transform: rotate(calc(var(--i, 0) * 2.2deg)) translateY(calc(abs(var(--i, 0)) * 4px)); }
+#hand .card:hover { transform: translateY(-16px) rotate(0deg) scale(1.06); box-shadow: 0 14px 24px rgba(0, 0, 0, 0.55); z-index: 5; }
+.card.unaffordable { opacity: 0.55; filter: saturate(0.5); cursor: default; }
+.card.unaffordable:hover { transform: rotate(calc(var(--i, 0) * 2.2deg)); }
+.card.small { width: 78px; height: 110px; cursor: default; animation: playToTable 0.3s ease backwards; }
+.card.small .glyph { font-size: 30px; margin-top: 12px; }
+.card.small .power { font-size: 24px; }
+.card.small .cname { font-size: 10px; }
+@keyframes dealIn { from { transform: translateY(-36px) scale(0.9) rotate(-5deg); opacity: 0; } }
+@keyframes playToTable { from { transform: translateY(-70px) scale(1.1); opacity: 0; } }
+.cost { position: absolute; top: 5px; left: 7px; font-size: 13px; letter-spacing: 1px; color: var(--suit-dark, #0c4a6e); font-weight: 800; }
+.cost span { font-size: 15px; margin-left: 2px; }
+.glyph { font-size: 44px; text-align: center; margin-top: 22px; color: var(--suit, #38bdf8); line-height: 1; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.12); }
+.cname { text-align: center; font-size: 13px; font-weight: 800; margin-top: 6px; padding: 0 4px; }
+.suitname { text-align: center; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #64748b; }
+.power {
+  position: absolute; bottom: 6px; right: 8px; font-size: 30px; font-weight: 900;
+  color: var(--suit-dark, #0c4a6e); line-height: 1;
+}
+.card.back {
+  width: 62px; height: 88px; border-radius: 9px; cursor: default;
+  background: repeating-linear-gradient(45deg, #0c4a6e 0 8px, #155e75 8px 16px);
+  border: 2px solid #38bdf8; display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.back-glyph { font-size: 26px; color: #7dd3fc; }
+.back-word { font-size: 9px; letter-spacing: 3px; color: #bae6fd; margin-top: 2px; }
+
+/* ---------- overlays ---------- */
+.overlay {
+  position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+  background: rgba(2, 20, 30, 0.82); backdrop-filter: blur(2px);
+}
+.overlay.hidden { display: none; }
+.overlay h1 { font-size: 64px; letter-spacing: 8px; color: #7dd3fc; text-shadow: 0 0 30px rgba(56, 189, 248, 0.6); }
+.overlay h1 b { color: #fbbf24; }
+.overlay h2 { font-size: 20px; color: #bae6fd; letter-spacing: 2px; margin-top: 6px; font-weight: 600; }
+.overlay .rules { max-width: 640px; margin: 18px 0 6px; font-size: 15px; line-height: 1.65; color: #dbeafe; }
+.overlay .rules b { color: #fde68a; }
+.suit-legend { display: flex; gap: 18px; margin: 12px 0 20px; font-size: 14px; }
+.suit-legend span { padding: 6px 12px; border-radius: 16px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); }
+.big-btn {
+  font-size: 20px; font-weight: 800; letter-spacing: 2px; padding: 14px 42px;
+  border-radius: 12px; border: 2px solid #fbbf24; cursor: pointer;
+  background: linear-gradient(180deg, #b45309, #92400e); color: #fef3c7; box-shadow: 0 5px 0 #451a03;
+}
+.big-btn:hover { filter: brightness(1.15); }
+#screen-win h1 { color: #fbbf24; text-shadow: 0 0 34px rgba(251, 191, 36, 0.65); }
+#screen-loss h1 { color: #fb7185; text-shadow: 0 0 34px rgba(251, 113, 133, 0.55); }
+.end-stats { font-size: 16px; color: #dbeafe; margin: 10px 0 22px; }
+.keys-hint { margin-top: 16px; font-size: 12px; color: #7fb6cf; }

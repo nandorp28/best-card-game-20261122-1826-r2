@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TIDEBOUND — duel of moon tides</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div id="game-title">TIDE<b>BOUND</b></div>
+    <div id="turn-label">Turn 1</div>
+    <div id="energy">Tide ●●● <span>3/3</span></div>
+    <div id="score-line"></div>
+    <button id="mute-btn">🔊 Sound on</button>
+  </div>
+
+  <div class="fighter opp">
+    <div class="avatar">🌙</div>
+    <div class="who">
+      <div class="name">RIN, TIDE-CALLER</div>
+      <div class="sub">Opponent · the far harbour</div>
+    </div>
+    <div class="hpbar" id="opp-hp"></div>
+    <div id="intent"></div>
+  </div>
+  <div class="mini-hand" id="opp-hand"></div>
+
+  <div class="table-row" id="table-opp"><span class="table-label">RIN'S TIDE</span></div>
+  <div id="combo-meter"></div>
+  <div class="table-row" id="table-you"><span class="table-label">YOUR TIDE</span></div>
+
+  <div id="log">The moon is full. The tide is listening.</div>
+
+  <div id="hand-zone">
+    <div class="fighter you" style="flex-direction:column;align-items:flex-start;gap:4px;margin:0">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="avatar">⚓</div>
+        <div class="who">
+          <div class="name">YOU</div>
+          <div class="sub">Tide-caller · your harbour</div>
+        </div>
+      </div>
+      <div class="hpbar" id="you-hp" style="width:210px"></div>
+    </div>
+    <div id="hand"></div>
+    <button id="end-turn">END TURN ⏎</button>
+  </div>
+
+  <div class="overlay" id="screen-title">
+    <h1>TIDE<b>BOUND</b></h1>
+    <h2>A DUEL OF MOON TIDES · 4 SUITS · 36 CARDS · 5 TIDE COMBOS · 2 HARBOURS · 20 LIFE</h2>
+    <div class="rules">
+      Play cards to the table — each costs tide. <b>Play 2 of one suit in a turn</b> and its
+      tide combo fires: <b>Wave</b> draws a card, <b>Coral</b> deals +3 damage, <b>Kelp</b> heals 3,
+      <b>Pearl</b> raises +3 shield. Rin announces the suit she is gathering — read her, then
+      counter her. Sink her harbour (20 life) before she sinks yours.
+    </div>
+    <div class="suit-legend">
+      <span>∿ Wave · draw</span><span>◆ Coral · +3 damage</span>
+      <span>❋ Kelp · heal 3</span><span>★ Pearl · +3 shield</span>
+    </div>
+    <button class="big-btn" id="play-btn">CALL THE TIDE</button>
+    <div class="keys-hint">Click a card to play it · keys 1–7 play · Enter ends the turn · M mutes</div>
+  </div>
+
+  <div class="overlay hidden" id="screen-win">
+    <h1>THE TIDE IS YOURS</h1>
+    <h2>Rin's harbour sinks beneath the moon.</h2>
+    <div class="end-stats" id="win-stats"></div>
+    <button class="big-btn" id="again-win">DUEL AGAIN</button>
+  </div>
+
+  <div class="overlay hidden" id="screen-loss">
+    <h1>THE TIDE TAKES YOU</h1>
+    <h2>Your harbour sinks. The moon keeps its counsel.</h2>
+    <div class="end-stats" id="loss-stats"></div>
+    <button class="big-btn" id="again-loss">CALL THE TIDE AGAIN</button>
+  </div>
+</div>
+<script type="module" src="game.js"></script>
+</body>
+</html>
